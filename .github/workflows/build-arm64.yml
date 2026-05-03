@@ -1,0 +1,36 @@
+name: Build ARM64
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+jobs:
+  build-arm64:
+    name: Compile TFS ARM64
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake build-essential \
+            libboost-system-dev libboost-filesystem-dev \
+            libmariadb-dev libluajit-5.1-dev \
+            libpugixml-dev libgmp-dev
+
+      - name: Build
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nostalrius-tfs-arm64
+          path: build/tfs
+          retention-days: 30
